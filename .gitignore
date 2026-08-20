@@ -1,4 +1,5 @@
 node_modules/
+docs/*.md
 .next/
 .env.local
 *.tsbuildinfo
