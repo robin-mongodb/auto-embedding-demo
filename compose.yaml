@@ -4,6 +4,8 @@ services:
     ports:
       - "3000:3000"
     env_file: .env.local
+    volumes:
+      - ./docs:/app/docs
 
   # one-off: docker compose run --rm seed
   seed:

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { QUERY_MODELS, INDEX_MODEL, RERANK_MODEL, type QueryModel, type SearchMode } from "@/lib/pipeline";
+import { slugify } from "@/lib/slug";
 
 interface SearchResult {
   text: string;
@@ -131,8 +132,14 @@ export default function Home() {
                     #{i + 1} · score {r.score.toFixed(4)}
                   </span>
                   <p className="meta">
-                    {r.sourceFile}
-                    {r.heading ? ` › ${r.heading}` : ""}
+                    <a
+                      href={`/docs/${r.sourceFile}${r.heading ? `#${slugify(r.heading)}` : ""}`}
+                      target="_blank"
+                      title="Open source document at this section"
+                    >
+                      {r.sourceFile}
+                      {r.heading ? ` › ${r.heading}` : ""}
+                    </a>
                     {` › chunk ${r.chunkIndex}`}
                   </p>
                   <p className="text">{r.text}</p>
