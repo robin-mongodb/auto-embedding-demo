@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env.local
+
+  # one-off: docker compose run --rm seed
+  seed:
+    build:
+      context: .
+      target: base
+    profiles: [seed]
+    command: node scripts/seed.ts
+    env_file: .env.local
+    volumes:
+      - ./docs:/app/docs

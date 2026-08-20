@@ -8,21 +8,37 @@ reproduces the same results in Compass/mongosh.
 
 ## Prerequisites
 
+All prerequisites are one-time **Atlas project setup** — the demo app itself only needs a connection string.
+
 - Atlas cluster, MongoDB **8.3+** ("Latest version with auto-upgrades"). `$rankFusion` needs 8.1+, `$rerank` needs 8.3+.
-- Voyage AI API key linked in Atlas (for autoEmbed and $rerank billing).
 - **Native Reranking enabled** in Atlas Project Settings (for the Reranker pane).
 - On M10+: storage auto-scaling enabled (autoEmbed requirement).
-- Node 22.6+ (runs the TypeScript seed script directly).
+- Node 22.6+ (runs the TypeScript seed script directly) — **or just Docker**, see below.
 
-## Run
+## Run with Docker (recommended — no local Node/npm needed)
 
-1. Put your connection string in `.env.local` (`MONGODB_URI=...`).
-2. Drop MongoDB docs `.md` files into `docs/`.
-3. `npm install && npm run seed` — chunks the files, creates both search indexes, waits until queryable.
-   Re-run after adding/editing files; unchanged files are skipped (sha256 tracked in `seed_meta`).
-4. `npm run dev` → http://localhost:3000
+1. Create `.env.local` with your connection string: `MONGODB_URI=mongodb+srv://...`
+2. Drop MongoDB docs `.md` files into `docs/` (they are gitignored; bring your own).
+3. Seed and serve:
 
-## What to show the Architect
+```sh
+docker compose run --rm seed   # chunk docs/*.md + create indexes (re-run after adding files)
+docker compose up app          # → http://localhost:3000
+```
+
+The seed step is idempotent — unchanged files are skipped (sha256 tracked in `seed_meta`), so re-running after dropping in new files only ingests those.
+
+## Run with local Node (22.6+)
+
+Same `.env.local` and `docs/` setup, then:
+
+```sh
+npm install
+npm run seed
+npm run dev    # → http://localhost:3000
+```
+
+## What to demonstrate
 
 - No embeddings in the app or the documents — Atlas generates them (see the `autoEmbed` index in `scripts/seed.ts`).
 - The query-model dropdown: index built with voyage-4-large, query answered with voyage-4-lite.
