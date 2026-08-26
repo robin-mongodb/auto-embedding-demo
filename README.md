@@ -1,46 +1,81 @@
 # Atlas Auto-Embedding Demo
 
-Shows MongoDB Atlas **Automated Embedding** (preview) with **asymmetric retrieval**: documents are
-auto-embedded server-side with `voyage-4-large`; queries embed at search time with `voyage-4-lite`
-(or any Voyage 4 model — they share one embedding space). Also demos hybrid search (`$rankFusion`)
-and native reranking (`$rerank`), each in a side-by-side pane with a copy-pastable pipeline that
-reproduces the same results in Compass/mongosh.
+MongoDB Atlas **Automated Embedding** with **asymmetric retrieval**: documents auto-embedded
+server-side with `voyage-4-large`, queries embedded with `voyage-4-lite` (shared Voyage 4
+embedding space). Includes hybrid search (`$rankFusion`) and native reranking (`$rerank`) in
+side-by-side panes, each with a copy-pastable pipeline that reproduces the results in Compass.
 
 ## Prerequisites
 
-All prerequisites are one-time **Atlas project setup** — the demo app itself only needs a connection string.
+One-time Atlas setup — the app itself only needs a connection string. No API key: Atlas runs the
+Voyage models server-side and bills tokens to your Atlas org (200M free tokens per model).
 
-- Atlas cluster, MongoDB **8.3+** ("Latest version with auto-upgrades"). `$rankFusion` needs 8.1+, `$rerank` needs 8.3+.
-- **Native Reranking enabled** in Atlas Project Settings (for the Reranker pane).
-- On M10+: storage auto-scaling enabled (autoEmbed requirement).
-- Node 22.6+ (runs the TypeScript seed script directly) — **or just Docker**, see below.
+- Atlas cluster on MongoDB **8.3+** ("Latest Release with auto-upgrades")
+- **Native Reranking** enabled in Project Settings
+- M10+ only: storage auto-scaling enabled
+- Docker, or Node 22.6+
 
-## Run with Docker (recommended — no local Node/npm needed)
+## 1. Install
 
-1. Create `.env.local` with your connection string: `MONGODB_URI=mongodb+srv://...`
-2. Drop MongoDB docs `.md` files into `docs/` (they are gitignored; bring your own).
-3. Seed and serve:
+Both paths need the repo and your Atlas connection string in `.env.local`.
+
+**Docker:**
 
 ```sh
-docker compose run --rm seed   # chunk docs/*.md + create indexes (re-run after adding files)
-docker compose up app          # → http://localhost:3000
+git clone https://github.com/robin-mongodb/auto-embedding-demo.git
+cd auto-embedding-demo
+echo 'MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/' > .env.local
 ```
 
-The seed step is idempotent — unchanged files are skipped (sha256 tracked in `seed_meta`), so re-running after dropping in new files only ingests those.
-
-## Run with local Node (22.6+)
-
-Same `.env.local` and `docs/` setup, then:
+**Node:**
 
 ```sh
+git clone https://github.com/robin-mongodb/auto-embedding-demo.git
+cd auto-embedding-demo
+echo 'MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/' > .env.local
 npm install
-npm run seed
-npm run dev    # → http://localhost:3000
 ```
 
-## What to demonstrate
+## 2. Load documents
 
-- No embeddings in the app or the documents — Atlas generates them (see the `autoEmbed` index in `scripts/seed.ts`).
-- The query-model dropdown: index built with voyage-4-large, query answered with voyage-4-lite.
-- Each pane's "Copy" button: paste into Compass aggregations on `auto_embedding_demo.doc_chunks` → identical results.
-- Drop a new `.md` into `docs/`, `npm run seed` again → only the new file ingests and becomes searchable.
+Drop any markdown files into `docs/`:
+
+```sh
+cp ~/my-docs/*.md docs/
+```
+
+## 3. Seed (chunk + index)
+
+Chunks the files by heading, inserts them, creates the `autoEmbed` vector index and the text
+search index, and waits until Atlas finishes embedding. Re-run any time — unchanged files are
+skipped, new/edited files are (re)ingested.
+
+```sh
+# If using Docker
+docker compose run --rm seed
+
+# If using Node
+npm run seed
+```
+
+## 4. Run
+
+```sh
+# If using Docker
+docker compose up app
+
+# If using Node
+npm run dev
+```
+
+In the browser
+→ http://localhost:3000
+
+## Demo script
+
+1. Search anything — results show chunk, score, and the exact `$vectorSearch` pipeline. Note: no
+   embeddings anywhere in the app; the query pipeline sends plain text.
+2. Switch the query model dropdown: document chunks indexed with `voyage-4-large`, queried with `voyage-4-lite`.
+3. Check **Hybrid** / **Reranker** for side-by-side `$rankFusion` and `$rerank` panes.
+4. Copy any pane's pipeline into Compass (`auto_embedding_demo.doc_chunks`) — same results.
+5. Drop a new `.md` into `docs/`, re-run seed — only the new file ingests, then it's searchable.
