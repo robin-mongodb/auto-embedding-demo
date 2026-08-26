@@ -132,15 +132,18 @@ export default function Home() {
                     #{i + 1} · score {r.score.toFixed(4)}
                   </span>
                   <p className="meta">
-                    <a
-                      href={`/docs/${r.sourceFile}${r.heading ? `#${slugify(r.heading)}` : ""}`}
-                      target="_blank"
-                      title="Open source document at this section"
-                    >
-                      {r.sourceFile}
-                      {r.heading ? ` › ${r.heading}` : ""}
-                    </a>
-                    {` › chunk ${r.chunkIndex}`}
+                    <span>
+                      <a
+                        href={`/docs/${r.sourceFile}${r.heading ? `#${slugify(r.heading)}` : ""}`}
+                        target="_blank"
+                        title="Open source document at this section"
+                      >
+                        {r.sourceFile}
+                        {r.heading ? ` › ${r.heading}` : ""}
+                      </a>
+                      {" › "}
+                      <span className="chunk-badge">chunk {r.chunkIndex}</span>
+                    </span>
                   </p>
                   <p className="text">{r.text}</p>
                 </div>
