@@ -25,13 +25,15 @@ export async function POST(request: Request) {
   const panes = await Promise.all(
     modes.map(async (mode) => {
       const pipeline = buildPipeline(mode, query, model);
+      const started = performance.now();
       try {
         const results = await chunks.aggregate(pipeline).toArray();
-        return { mode, results, shellQuery: renderShellQuery(pipeline) };
+        const tookMs = Math.round(performance.now() - started);
+        return { mode, results, tookMs, shellQuery: renderShellQuery(pipeline) };
       } catch (err) {
         // e.g. $rerank rejected because Native Reranking isn't enabled — show it in the pane
         const message = err instanceof Error ? err.message : String(err);
-        return { mode, results: [], shellQuery: renderShellQuery(pipeline), error: message };
+        return { mode, results: [], tookMs: null, shellQuery: renderShellQuery(pipeline), error: message };
       }
     }),
   );

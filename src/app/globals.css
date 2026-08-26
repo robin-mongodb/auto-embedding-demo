@@ -94,6 +94,20 @@ h1 {
   font-size: 1.05rem;
 }
 
+.latency {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  color: #1254b7;
+  margin: 0 0 0.4rem;
+  min-height: 1em; /* keeps panes aligned when a pane has no latency (error case) */
+}
+
+.latency-ms {
+  color: #00684a;
+  font-weight: 700;
+}
+
 .pane .pane-note {
   font-size: 0.8rem;
   color: #5c6c75;
@@ -148,17 +162,33 @@ h1 {
 }
 
 .query-panel {
-  margin-top: 1rem;
+  margin: 0.25rem 0 0.75rem;
+  border: 1.5px solid #00ed64;
+  border-radius: 6px;
+  background: #f8fafb;
 }
 
-.query-panel .query-header {
+.query-panel summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  list-style: none;
 }
 
-.query-panel .query-header span {
+.query-panel summary::before {
+  content: "▸";
+  color: #5c6c75;
+  margin-right: 0.5rem;
+}
+
+.query-panel[open] summary::before {
+  content: "▾";
+}
+
+.query-panel summary span {
+  flex: 1;
   font-size: 0.8rem;
   font-weight: 600;
   color: #5c6c75;
@@ -348,5 +378,5 @@ h1 {
   line-height: 1.45;
   overflow: auto;
   max-height: 340px;
-  margin: 0;
+  margin: 0 0.5rem 0.5rem;
 }

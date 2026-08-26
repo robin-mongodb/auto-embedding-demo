@@ -15,6 +15,7 @@ interface SearchResult {
 interface Pane {
   mode: SearchMode;
   results: SearchResult[];
+  tookMs: number | null;
   shellQuery: string;
   error?: string;
 }
@@ -33,13 +34,20 @@ function CopyableQuery({ shellQuery }: { shellQuery: string }) {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <div className="query-panel">
-      <div className="query-header">
-        <span>Query (mongosh / Compass)</span>
-        <button onClick={copy}>{copied ? "Copied!" : "Copy"}</button>
-      </div>
+    <details className="query-panel">
+      <summary>
+        <span>Show query (mongosh / Compass)</span>
+        <button
+          onClick={(e) => {
+            e.preventDefault(); // don't toggle the details when copying
+            copy();
+          }}
+        >
+          {copied ? "Copied!" : "Copy"}
+        </button>
+      </summary>
       <pre>{shellQuery}</pre>
-    </div>
+    </details>
   );
 }
 
@@ -114,13 +122,22 @@ export default function Home() {
 
       <div className="panes">
         {panes.map((pane) => (
-          <section className="pane" key={pane.mode}>
-            <h2>{PANE_TITLES[pane.mode]}</h2>
+          <div key={pane.mode}>
+            <p className="latency">
+              {pane.tookMs !== null && (
+                <>
+                  Results returned in <span className="latency-ms">{pane.tookMs} ms</span>
+                </>
+              )}
+            </p>
+            <section className="pane">
+              <h2>{PANE_TITLES[pane.mode]}</h2>
             <p className="pane-note">
               {pane.mode === "semantic" && `Indexed with ${INDEX_MODEL}, queried with ${model}.`}
               {pane.mode === "hybrid" && "Reciprocal rank fusion of $vectorSearch (0.7) + $search full-text (0.3)."}
               {pane.mode === "rerank" && `Top 20 semantic hits reordered in-database by ${RERANK_MODEL}.`}
             </p>
+            <CopyableQuery shellQuery={pane.shellQuery} />
             {pane.error ? (
               <p className="error">{pane.error}</p>
             ) : pane.results.length === 0 ? (
@@ -149,8 +166,8 @@ export default function Home() {
                 </div>
               ))
             )}
-            <CopyableQuery shellQuery={pane.shellQuery} />
-          </section>
+            </section>
+          </div>
         ))}
       </div>
     </main>
